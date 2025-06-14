@@ -23,3 +23,9 @@ cc_test(
     srcs = ["main-benchmark_test.cc"],
     deps = ["@google_benchmark//:benchmark_main"],
 )
+
+cc_test(
+    name = "vowels-benchmark_test",
+    srcs = ["vowels-benchmark_test.cc"],
+    deps = ["@google_benchmark//:benchmark_main"],
+)
