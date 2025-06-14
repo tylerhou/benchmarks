@@ -9,7 +9,7 @@
 
 static constexpr std::string_view kVowels = "aeiouAEIOU";
 
-static bool HasVowelLoopConstexpr(std::string_view haystack) {
+static bool HasVowelLoop(std::string_view haystack) {
   for (char v : kVowels) {
     for (int i = 0; i < haystack.size(); ++i) {
       if (haystack[i] == v) {
@@ -20,9 +20,9 @@ static bool HasVowelLoopConstexpr(std::string_view haystack) {
   return false;
 }
 
-static bool HasVowelLoop(std::string_view vowels, std::string_view haystack) {
-  for (char v : vowels) {
-    for (int i = 0; i < haystack.size(); ++i) {
+static bool HasVowelLoopInterchanged(std::string_view haystack) {
+  for (int i = 0; i < haystack.size(); ++i) {
+    for (char v : kVowels) {
       if (haystack[i] == v) {
         return true;
       }
@@ -179,190 +179,80 @@ static std::vector<std::string>& LongNoVowels() {
   return *strs;
 }
 
-static void BM_HasVowelLoopConstexpr_ShortWithVowels(benchmark::State& state) {
-  auto strs = ShortWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoopConstexpr(s));
-  }
-}
+#define BENCHMARK_HAS_VOWEL(Fn, Data, Args...)                              \
+  static void BM_##Fn##_##Data(benchmark::State& state) {                   \
+    auto strs = Data();                                                     \
+    for (auto _ : state) {                                                  \
+      for (const std::string& s : strs) benchmark::DoNotOptimize(Fn(Args)); \
+    }                                                                       \
+  }                                                                         \
+                                                                            \
+  BENCHMARK(BM_##Fn##_##Data);
 
-static void BM_HasVowelLoopConstexpr_ShortNoVowels(benchmark::State& state) {
-  auto strs = ShortNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoopConstexpr(s));
-  }
-}
-static void BM_HasVowelLoopConstexpr_LongWithVowels(benchmark::State& state) {
-  auto strs = LongWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoopConstexpr(s));
-  }
-}
-static void BM_HasVowelLoopConstexpr_LongNoVowels(benchmark::State& state) {
-  auto strs = LongNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoopConstexpr(s));
-  }
-}
+BENCHMARK_HAS_VOWEL(HasVowelLoop, ShortWithVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelLoopInterchanged, ShortWithVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegex, ShortWithVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegexEarlyReturn, ShortWithVowels, s)
 
-static void BM_HasVowelLoop_ShortWithVowels(benchmark::State& state) {
-  auto strs = ShortWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoop(kVowels, s));
-  }
-}
+BENCHMARK_HAS_VOWEL(HasVowelLoop, ShortNoVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelLoopInterchanged, ShortNoVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegex, ShortNoVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegexEarlyReturn, ShortNoVowels, s)
 
-static void BM_HasVowelLoop_ShortNoVowels(benchmark::State& state) {
-  auto strs = ShortNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoop(kVowels, s));
-  }
-}
-static void BM_HasVowelLoop_LongWithVowels(benchmark::State& state) {
-  auto strs = LongWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoop(kVowels, s));
-  }
-}
-static void BM_HasVowelLoop_LongNoVowels(benchmark::State& state) {
-  auto strs = LongNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelLoop(kVowels, s));
-  }
-}
+BENCHMARK_HAS_VOWEL(HasVowelLoop, LongWithVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelLoopInterchanged, LongWithVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegex, LongWithVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegexEarlyReturn, LongWithVowels, s)
 
-static void BM_HasVowelRegex_ShortWithVowels(benchmark::State& state) {
-  auto strs = ShortWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegex(s));
-  }
-}
-
-static void BM_HasVowelRegex_ShortNoVowels(benchmark::State& state) {
-  auto strs = ShortNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegex(s));
-  }
-}
-static void BM_HasVowelRegex_LongWithVowels(benchmark::State& state) {
-  auto strs = LongWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegex(s));
-  }
-}
-static void BM_HasVowelRegex_LongNoVowels(benchmark::State& state) {
-  auto strs = LongNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegex(s));
-  }
-}
-
-static void BM_HasVowelRegexEarlyReturn_ShortWithVowels(
-    benchmark::State& state) {
-  auto strs = ShortWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegexEarlyReturn(s));
-  }
-}
-
-static void BM_HasVowelRegexEarlyReturn_ShortNoVowels(benchmark::State& state) {
-  auto strs = ShortNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegexEarlyReturn(s));
-  }
-}
-static void BM_HasVowelRegexEarlyReturn_LongWithVowels(
-    benchmark::State& state) {
-  auto strs = LongWithVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegexEarlyReturn(s));
-  }
-}
-static void BM_HasVowelRegexEarlyReturn_LongNoVowels(benchmark::State& state) {
-  auto strs = LongNoVowels();
-  for (auto _ : state) {
-    for (const std::string& s : strs)
-      benchmark::DoNotOptimize(HasVowelRegexEarlyReturn(s));
-  }
-}
-
-BENCHMARK(BM_HasVowelLoopConstexpr_ShortWithVowels);
-BENCHMARK(BM_HasVowelLoop_ShortWithVowels);
-BENCHMARK(BM_HasVowelRegex_ShortWithVowels);
-BENCHMARK(BM_HasVowelRegexEarlyReturn_ShortWithVowels);
-
-BENCHMARK(BM_HasVowelLoopConstexpr_ShortNoVowels);
-BENCHMARK(BM_HasVowelLoop_ShortNoVowels);
-BENCHMARK(BM_HasVowelRegex_ShortNoVowels);
-BENCHMARK(BM_HasVowelRegexEarlyReturn_ShortNoVowels);
-
-BENCHMARK(BM_HasVowelLoopConstexpr_LongWithVowels);
-BENCHMARK(BM_HasVowelLoop_LongWithVowels);
-BENCHMARK(BM_HasVowelRegex_LongWithVowels);
-BENCHMARK(BM_HasVowelRegexEarlyReturn_LongWithVowels);
-
-BENCHMARK(BM_HasVowelLoopConstexpr_LongNoVowels);
-BENCHMARK(BM_HasVowelLoop_LongNoVowels);
-BENCHMARK(BM_HasVowelRegex_LongNoVowels);
-BENCHMARK(BM_HasVowelRegexEarlyReturn_LongNoVowels);
+BENCHMARK_HAS_VOWEL(HasVowelLoop, LongNoVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelLoopInterchanged, LongNoVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegex, LongNoVowels, s)
+BENCHMARK_HAS_VOWEL(HasVowelRegexEarlyReturn, LongNoVowels, s)
 
 /* Results on my M1 Mac:
 
 tylerhou@ ~/code/benchmarks main*
 ❯ bazel run -c opt :vowels-benchmark_test
-Starting local Bazel server and connecting to it...
-INFO: Analyzed target //:vowels-benchmark_test (77 packages loaded, 396 targets configured).
+INFO: Analyzed target //:vowels-benchmark_test (0 packages loaded, 0 targets configured).
 INFO: Found 1 target...
 Target //:vowels-benchmark_test up-to-date:
   bazel-bin/vowels-benchmark_test
-INFO: Elapsed time: 11.254s, Critical Path: 2.26s
-INFO: 39 processes: 16 internal, 23 processwrapper-sandbox.
-INFO: Build completed successfully, 39 total actions
+INFO: Elapsed time: 1.117s, Critical Path: 1.04s
+INFO: 3 processes: 1 internal, 2 processwrapper-sandbox.
+INFO: Build completed successfully, 3 total actions
 INFO: Running command line: external/bazel_tools/tools/test/test-setup.sh ./vowels-benchmark_test
 exec ${PAGER:-/usr/bin/less} "$0" || exit 1
 Executing tests from //:vowels-benchmark_test
 -----------------------------------------------------------------------------
-2025-06-14T11:53:48+00:00
+2025-06-14T12:21:55+00:00
 Running /home/tylerhou/.cache/bazel/_bazel_tylerhou/09f0f2c0c9650554e1952e274ae6605c/execroot/_main/bazel-out/aarch64-opt/bin/vowels-benchmark_test.runfiles/_main/vowels-benchmark_test
 Run on (4 X 48 MHz CPU s)
 CPU Caches:
   L1 Data 128 KiB (x4)
   L1 Instruction 192 KiB (x4)
   L2 Unified 12288 KiB (x4)
-Load Average: 0.85, 0.30, 0.26
+Load Average: 0.43, 0.28, 0.24
 --------------------------------------------------------------------------------------
 Benchmark                                            Time             CPU   Iterations
 --------------------------------------------------------------------------------------
-BM_HasVowelLoopConstexpr_ShortWithVowels         21351 ns        21349 ns        32294
-BM_HasVowelLoop_ShortWithVowels                  20954 ns        20953 ns        33480
-BM_HasVowelRegex_ShortWithVowels                  8598 ns         8594 ns        76750
-BM_HasVowelRegexEarlyReturn_ShortWithVowels       4698 ns         4697 ns       147919
-BM_HasVowelLoopConstexpr_ShortNoVowels           49714 ns        49709 ns        14102
-BM_HasVowelLoop_ShortNoVowels                    49373 ns        49361 ns        14149
-BM_HasVowelRegex_ShortNoVowels                    8957 ns         8953 ns        73880
-BM_HasVowelRegexEarlyReturn_ShortNoVowels        16544 ns        16542 ns        39720
-BM_HasVowelLoopConstexpr_LongWithVowels          31675 ns        31662 ns        22046
-BM_HasVowelLoop_LongWithVowels                   30906 ns        30894 ns        22785
-BM_HasVowelRegex_LongWithVowels               11009363 ns     11003624 ns           64
-BM_HasVowelRegexEarlyReturn_LongWithVowels        6539 ns         6536 ns       107622
-BM_HasVowelLoopConstexpr_LongNoVowels         16600642 ns     16595016 ns           42
-BM_HasVowelLoop_LongNoVowels                  16592748 ns     16587245 ns           41
-BM_HasVowelRegex_LongNoVowels                 11003512 ns     10997950 ns           64
-BM_HasVowelRegexEarlyReturn_LongNoVowels      11094402 ns     11089638 ns           63
+BM_HasVowelLoop_ShortWithVowels                  20113 ns        20106 ns        33958
+BM_HasVowelLoopInterchanged_ShortWithVowels       4086 ns         4084 ns       171375
+BM_HasVowelRegex_ShortWithVowels                  9051 ns         9046 ns        75526
+BM_HasVowelRegexEarlyReturn_ShortWithVowels       4623 ns         4621 ns       152526
+
+BM_HasVowelLoop_ShortNoVowels                    49324 ns        49323 ns        14188
+BM_HasVowelLoopInterchanged_ShortNoVowels        11568 ns        11566 ns        57688
+BM_HasVowelRegex_ShortNoVowels                    8974 ns         8972 ns        72943
+BM_HasVowelRegexEarlyReturn_ShortNoVowels        17387 ns        17385 ns        36878
+
+BM_HasVowelLoop_LongWithVowels                   31715 ns        31703 ns        21966
+BM_HasVowelLoopInterchanged_LongWithVowels        4960 ns         4958 ns       138642
+BM_HasVowelRegex_LongWithVowels               10934954 ns     10922601 ns           64
+BM_HasVowelRegexEarlyReturn_LongWithVowels        6102 ns         6099 ns       113229
+
+BM_HasVowelLoop_LongNoVowels                  16585685 ns     16579396 ns           42
+BM_HasVowelLoopInterchanged_LongNoVowels       3229223 ns      3227815 ns          217
+BM_HasVowelRegex_LongNoVowels                 11001319 ns     10996631 ns           64
+BM_HasVowelRegexEarlyReturn_LongNoVowels      11103946 ns     11100598 ns           63
 
 */
